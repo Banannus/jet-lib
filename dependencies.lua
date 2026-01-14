@@ -1,0 +1,25 @@
+Registry = {}
+
+Registry.frameworks = {
+    ['es_extended'] = { id = 'esx', object = 'es_extended', getter = 'getSharedObject' },
+    ['qb-core'] = { id = 'qb', object = 'qb-core', getter = 'GetCoreObject' },
+    ['qbx_core'] = { id = 'qbx', object = 'qb-core', getter = 'GetCoreObject' }
+}
+
+Registry.dependencies = {
+    inventory = {
+        ['ox_inventory'] = 'ox',
+        ['qs-inventory-pro'] = 'qs',
+        ['codem-inventory'] = 'codem'
+    },
+    dispatch = {
+        ['linden_outlawalert'] = 'linden',
+        ['cd_dispatch'] = 'cd',
+        ['fd_dispatch'] = 'fd',
+        ['ps-dispatch'] = 'ps',
+        ['qs-dispatch'] = 'qs',
+        ['core_dispatch'] = 'core',
+        ['origen_police'] = 'origen',
+        ['codem-dispatch'] = 'codem'
+    }
+}
