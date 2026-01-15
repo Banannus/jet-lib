@@ -34,6 +34,11 @@ Registry.dependencies = {
     radialmenu = {
         ['qb-radialmenu'] = 'qb',
         ['ox_lib'] = 'ox',
+    },
+    mdt = {
+        ['tk_mdt'] = 'tk_mdt',
+        ['lb-tablet'] = 'lb_tablet',
+        ['ps-mdt'] = 'qb',
     }
 }
 
