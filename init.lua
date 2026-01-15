@@ -1,3 +1,42 @@
+local Registry = {}
+
+Registry.frameworks = {
+    ['es_extended'] = { id = 'esx', object = 'es_extended', getter = 'getSharedObject' },
+    ['qb-core'] = { id = 'qb', object = 'qb-core', getter = 'GetCoreObject' },
+    ['qbx_core'] = { id = 'qb', object = 'qb-core', getter = 'GetCoreObject' }
+}
+
+Registry.dependencies = {
+    inventory = {
+        ['ox_inventory'] = 'ox',
+        ['qs-inventory-pro'] = 'qs',
+        ['qs-inventory'] = 'qs',
+        ['codem-inventory'] = 'codem',
+        ['origen-inventory'] = 'origen',
+        ['qb-inventory'] = 'qb',
+        ['ps-inventory'] = 'qb',
+        ['lj-inventory'] = 'qb',
+        ['renewed-inventory'] = 'qb'
+    },
+    dispatch = {
+        ['linden_outlawalert'] = 'linden',
+        ['cd_dispatch'] = 'cd',
+        ['fd_dispatch'] = 'fd',
+        ['ps-dispatch'] = 'ps',
+        ['qs-dispatch'] = 'qs',
+        ['core_dispatch'] = 'core',
+        ['origen_police'] = 'origen',
+        ['codem-dispatch'] = 'codem'
+    },
+    notification = {
+        ['ox_lib'] = 'ox',
+    },
+    radialmenu = {
+        ['qb-radialmenu'] = 'qb',
+        ['ox_lib'] = 'ox',
+    }
+}
+
 local Dep = {}
 
 local function initFramework(fw)
@@ -75,7 +114,10 @@ Jet = setmetatable({
             implFile = self.context == 'server' and 'server.lua' or 'client.lua'
             implChunk = LoadResourceFile(self.name, ('%s/%s'):format(basePath, implFile))
         end
-        env.impl = assert(load(implChunk, ('@@%s/%s/%s'):format(self.name, basePath, implFile), 't', env))()
+        
+        if implChunk then
+            env.impl = assert(load(implChunk, ('@@%s/%s/%s'):format(self.name, basePath, implFile), 't', env))()
+        end
 
         local module = assert(load(sharedChunk, ('@@%s/%s/shared.lua'):format(self.name, basePath), 't', env))()
         self[key] = module
