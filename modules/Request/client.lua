@@ -6,7 +6,7 @@
     Copyright © 2025 Linden <https://github.com/thelindat>
 ]]
 
-local module = {}
+local Request = {}
 
 ---@async
 ---@generic T : string | number
@@ -15,7 +15,7 @@ local module = {}
 ---@param assetType string
 ---@param asset T
 ---@param timeout? number
-local function streamingRequest(request, hasLoaded, assetType, asset, timeout)
+local function StreamingRequest(request, hasLoaded, assetType, asset, timeout)
     if hasLoaded(asset) then return asset end
 
     request(asset)
@@ -29,7 +29,7 @@ end
 ---@param model number | string
 ---@param timeout number? Approximate milliseconds to wait for the model to load. Default is 10000.
 ---@return number model
-function module.model(model, timeout)
+function Request.Model(model, timeout)
     if type(model) ~= 'number' then model = joaat(model) end
     if HasModelLoaded(model) then return model end
 
@@ -37,12 +37,12 @@ function module.model(model, timeout)
         error(("attempted to load invalid model '%s'"):format(model))
     end
 
-    return streamingRequest(RequestModel, HasModelLoaded, 'model', model, timeout)
+    return StreamingRequest(RequestModel, HasModelLoaded, 'model', model, timeout)
 end
 
 ---@param animDict string
 ---@param timeout number? Approximate milliseconds to wait for the dictionary to load. Default is 10000.
-function module.animDict(animDict, timeout)
+function Request.AnimDict(animDict, timeout)
     if HasAnimDictLoaded(animDict) then return animDict end
 
     if type(animDict) ~= 'string' then
@@ -53,22 +53,22 @@ function module.animDict(animDict, timeout)
         error(("attempted to load invalid animDict '%s'"):format(animDict))
     end
 
-    return streamingRequest(RequestAnimDict, HasAnimDictLoaded, 'animDict', animDict, timeout)
+    return StreamingRequest(RequestAnimDict, HasAnimDictLoaded, 'animDict', animDict, timeout)
 end
 
 ---@param ptFxName string
 ---@param timeout number? Approximate milliseconds to wait for the particle effect to load. Default is 10000.
 ---@return string ptFxName
-function module.namedPtfxAsset(ptFxName, timeout)
+function Request.NamedPtfxAsset(ptFxName, timeout)
     if HasNamedPtfxAssetLoaded(ptFxName) then return ptFxName end
 
     if type(ptFxName) ~= 'string' then
         error(("expected ptFxName to have type 'string' (received %s)"):format(type(ptFxName)))
     end
 
-    return streamingRequest(RequestNamedPtfxAsset, HasNamedPtfxAssetLoaded, 'ptFxName', ptFxName, timeout)
+    return StreamingRequest(RequestNamedPtfxAsset, HasNamedPtfxAssetLoaded, 'ptFxName', ptFxName, timeout)
 end
 
 -- TODO: DOESNT WORK YET
 
-return module
+return Request
