@@ -6,7 +6,7 @@
     Copyright © 2025 Linden <https://github.com/thelindat>
 ]]
 
-local Vehicle = {}
+local module = {}
 
 ---@class VehicleProperties
 ---@field model? number
@@ -100,7 +100,7 @@ local Vehicle = {}
 ---@param Props VehicleProperties
 ---@param FixVehicle? boolean Fix the Vehicle after Props have been set. Usually required when adding extras.
 ---@return boolean isEntityOwner True if the entity is networked and the client is the current entity owner.
-function Vehicle.SetProperties(Vehicle, Props, FixVehicle)
+function module.setProperties(Vehicle, Props, FixVehicle)
     if not DoesEntityExist(Vehicle) then
         error(("Unable to set Vehicle properties for '%s' (entity does not exist)"):format(Vehicle))
     end
@@ -462,7 +462,7 @@ end
 
 ---@param Vehicle number
 ---@return VehicleProperties?
-function Vehicle.GetProperties(Vehicle)
+function module.getProperties(Vehicle)
     if DoesEntityExist(Vehicle) then
         ---@type number | number[], number | number[]
         local colorPrimary, colorSecondary = GetVehicleColours(Vehicle)
@@ -614,4 +614,4 @@ function Vehicle.GetProperties(Vehicle)
     end
 end
 
-return Vehicle
+return module

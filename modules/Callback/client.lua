@@ -1,34 +1,27 @@
 --[[
     Jet-lib Callback System (Client-side)
-    Adapted from ox_lib callback system
+    Based on ox_lib callback system
 ]]
 
-local Callback = {}
+local validation = require 'modules.Callback.validation'
 local pendingCallbacks = {}
-local registeredCallbacks = {}
 local timers = {}
 local cbEvent = '__jet_cb_%s'
 local callbackTimeout = GetConvarInt('jet:callbackTimeout', 30000)
-local resourceName = GetCurrentResourceName()
+local resourceName = cache and cache.resource or GetCurrentResourceName()
 
--- Handle callback responses from server
 RegisterNetEvent(cbEvent:format(resourceName), function(key, ...)
+    if source == '' then return end
+
     local cb = pendingCallbacks[key]
+
     if not cb then return end
-    
+
     pendingCallbacks[key] = nil
+
     cb(...)
 end)
 
--- Validate callback exists
-RegisterNetEvent('jet:validateCallback', function(event, resource, key)
-    local callback = registeredCallbacks[event]
-    if not callback then
-        TriggerServerEvent(cbEvent:format(resource), key, 'cb_invalid')
-    end
-end)
-
--- Event timer for rate limiting
 ---@param event string
 ---@param delay? number | false prevent the event from being called for the given time
 local function eventTimer(event, delay)
@@ -54,117 +47,99 @@ end
 local function triggerServerCallback(_, event, delay, cb, ...)
     if not eventTimer(event, delay) then return end
 
-    local key = ('%s:%s'):format(event, math.random(0, 100000))
-    
-    -- Keep generating keys until we find a unique one
-    while pendingCallbacks[key] do
+    local key
+
+    repeat
         key = ('%s:%s'):format(event, math.random(0, 100000))
-    end
+    until not pendingCallbacks[key]
 
     TriggerServerEvent('jet:validateCallback', event, resourceName, key)
     TriggerServerEvent(cbEvent:format(event), resourceName, key, ...)
 
-    -- Handle async vs sync callbacks
-    if not cb then
-        -- Synchronous - use promise-like approach
-        local finished = false
-        local result = {}
-        
-        pendingCallbacks[key] = function(response, ...)
-            if response == 'cb_invalid' then
-                error(("callback '%s' does not exist on server"):format(event))
-            end
-            
-            result = { response, ... }
-            finished = true
+    ---@type promise | false
+    local promise = not cb and promise.new()
+
+    pendingCallbacks[key] = function(response, ...)
+        if response == 'cb_invalid' then
+            response = ("callback '%s' does not exist"):format(event)
+
+            return promise and promise:reject(response) or error(response)
         end
 
-        -- Timeout handling
-        local startTime = GetGameTimer()
-        while not finished do
-            if GetGameTimer() - startTime > callbackTimeout then
-                pendingCallbacks[key] = nil
-                error(("callback event '%s' timed out"):format(event))
-            end
-            Wait(0)
+        response = { response, ... }
+
+        if promise then
+            return promise:resolve(response)
         end
 
-        return table.unpack(result)
-    else
-        -- Asynchronous - use callback function
-        pendingCallbacks[key] = function(response, ...)
-            if response == 'cb_invalid' then
-                print(("Callback '%s' does not exist on server"):format(event))
-                return
-            end
-            
-            cb(response, ...)
+        if cb then
+            cb(table.unpack(response))
         end
-        
-        -- Clean up after timeout
-        SetTimeout(callbackTimeout, function()
-            if pendingCallbacks[key] then
-                pendingCallbacks[key] = nil
-                print(("Callback '%s' timed out"):format(event))
-            end
-        end)
+    end
+
+    if promise then
+        SetTimeout(callbackTimeout, function() promise:reject(("callback event '%s' timed out"):format(key)) end)
+
+        return table.unpack(Citizen.Await(promise))
     end
 end
 
--- Main callback function (can be called directly)
----@param event string
----@param delay? number | false prevent the event from being called for the given time
----@param cb? function
----@param ... any
----@return ...
-function Callback.Trigger(event, delay, cb, ...)
+local Callback = {}
+
+-- Main callback trigger
+Callback.Trigger = function(event, delay, cb, ...)
     if not cb then
-        print(("callback event '%s' does not have a function to callback to and will instead await"):format(event))
+        print(("callback event '%s' does not have a function to callback to and will instead await\nuse Callback.Await or a regular event to remove this warning"):format(event))
     else
         local cbType = type(cb)
+
         if cbType == 'table' and getmetatable(cb) and getmetatable(cb).__call then
             cbType = 'function'
         end
-        assert(cbType == 'function', ("expected callback to be a function (received %s)"):format(cbType))
+
+        assert(cbType == 'function', ("expected argument 3 to have type 'function' (received %s)"):format(cbType))
     end
 
     return triggerServerCallback(nil, event, delay, cb, ...)
 end
 
--- Await version (synchronous)
 ---@param event string
----@param delay? number | false prevent the event from being called for the given time
----@param ... any
----@return ...
+---@param delay? number | false prevent the event from being called for the given time.
+---Sends an event to the server and halts the current thread until a response is returned.
 function Callback.Await(event, delay, ...)
     return triggerServerCallback(nil, event, delay, false, ...)
 end
 
--- Safe callback response handler
 local function callbackResponse(success, result, ...)
     if not success then
         if result then
-            print(('^1SCRIPT ERROR: %s^0'):format(result))
+            return print(('^1SCRIPT ERROR: %s^0\n%s'):format(result,
+                Citizen.InvokeNative(`FORMAT_STACK_TRACE` & 0xFFFFFFFF, nil, 0, Citizen.ResultAsString()) or ''))
         end
+
         return false
     end
+
     return result, ...
 end
 
--- Register a callback handler
+local pcall = pcall
+
 ---@param name string
 ---@param cb function
+---Registers an event handler and callback function to respond to server requests.
 function Callback.Register(name, cb)
-    assert(type(name) == 'string', 'Callback name must be a string')
-    assert(type(cb) == 'function', 'Callback handler must be a function')
-    
     local event = cbEvent:format(name)
-    registeredCallbacks[name] = true
-    
+
+    validation.setValidCallback(name, true)
+
     RegisterNetEvent(event, function(resource, key, ...)
-        local response = { callbackResponse(pcall(cb, ...)) }
-        TriggerServerEvent(cbEvent:format(resource), key, table.unpack(response))
+        TriggerServerEvent(cbEvent:format(resource), key, callbackResponse(pcall(cb, ...)))
     end)
 end
+
+-- Expose validation functions
+Callback.setValidCallback = validation.setValidCallback
+Callback.isCallbackValid = validation.isCallbackValid
 
 return Callback

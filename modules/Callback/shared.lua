@@ -12,4 +12,12 @@ function Callback.Register(...)
     return impl.Register(...)
 end
 
+function Callback.setValidCallback(...)
+    return impl.setValidCallback(...)
+end
+
+function Callback.isCallbackValid(...)
+    return impl.isCallbackValid(...)
+end
+
 return Callback

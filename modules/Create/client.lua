@@ -1,4 +1,4 @@
-local Create = {}
+local module = {}
 
 local Creating = false
 
@@ -7,7 +7,7 @@ local Creating = false
 ---@param Props table?
 ---@return number Vehicle
 ---@return number NetworkId
-function Create.Vehicle(Model, Coords, Props)
+function module.vehicle(Model, Coords, Props)
     while Creating do Wait(100) end
     Creating = true
 
@@ -28,8 +28,8 @@ function Create.Vehicle(Model, Coords, Props)
 
     SetEntityAsMissionEntity(Vehicle, true, true)
     SetEntityVisible(Vehicle, true, false)
-
-    -- if Props then lib.setVehicleProperties(Vehicle, Props) end TODO: Set Vehicle Properties
+    
+    if Props then Jet.Vehicle.SetProperties(Vehicle, Props) end
 
     SetTimeout(100, function()
        Creating = false
@@ -37,6 +37,7 @@ function Create.Vehicle(Model, Coords, Props)
 
     SetModelAsNoLongerNeeded(Model)
 
+    print("Created vehicle:", Vehicle, "NetworkId:", NetworkId) --- IGNORE ---
     return Vehicle, NetworkId
 end
 
@@ -44,7 +45,7 @@ end
 ---@param Coords vector4
 ---@return number Prop
 ---@return number NetworkId
-function Create.Prop(Model, Coords)
+function module.prop(Model, Coords)
     while Creating do Wait(100) end
     Creating = true
 
@@ -81,7 +82,7 @@ end
 ---@param InsideVehicle table?
 ---@return number Ped
 ---@return number NetworkId
-function Create.Ped(Model, Coords, InsideVehicle)
+function module.ped(Model, Coords, InsideVehicle)
     while Creating do Wait(100) end
     Creating = true
     
@@ -123,4 +124,4 @@ function Create.Ped(Model, Coords, InsideVehicle)
     return Ped, NetworkId
 end
 
-return Create
+return module

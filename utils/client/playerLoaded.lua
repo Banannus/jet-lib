@@ -14,3 +14,7 @@ RegisterNetEvent('playerDropped', function()
     TriggerClientEvent('jet-lib:playerUnload')
 end)
 
+RegisterNetEvent('jet-lib:client:notify', function(title, description, duration, notifyType, icon, iconColor)
+    Jet.Notification.Notify(title, description, duration, notifyType, icon, iconColor)
+end)
+

@@ -31,7 +31,7 @@ end
 function module.hasGrade(source, jobName, gradeLevel)
     local player = Dep.object.GetPlayerFromId(source)
     if player.job.name ~= jobName then return false end
-    if player.job.grade.level >= gradeLevel then return true end
+    if player.job.grade >= gradeLevel then return true end
     return false
 end
 
@@ -57,7 +57,7 @@ function module.getPlayerData(source)
         job = {
             name = player.job.name,
             label = player.job.label,
-            grade = player.job.grade.level,
+            grade = player.job.grade,
             gradeLabel = player.job.grade_label,
             IsBoss = player.job.grade_name == 'boss'
         },

@@ -6,7 +6,7 @@
     Copyright © 2025 Linden <https://github.com/thelindat>
 ]]
 
-local Request = {}
+local module = {}
 
 ---@async
 ---@generic T : string | number
@@ -20,7 +20,7 @@ local function StreamingRequest(request, hasLoaded, assetType, asset, timeout)
 
     request(asset)
 
-    return jet.Util.waitFor(function()
+    return Jet.Util.WaitFor(function()
             if hasLoaded(asset) then return asset end
         end, ("failed to load %s '%s' - this may be caused by\n- too many loaded assets\n- oversized, invalid, or corrupted assets"):format(assetType, asset),
         timeout or 30000)
@@ -29,7 +29,7 @@ end
 ---@param model number | string
 ---@param timeout number? Approximate milliseconds to wait for the model to load. Default is 10000.
 ---@return number model
-function Request.Model(model, timeout)
+function module.model(model, timeout)
     if type(model) ~= 'number' then model = joaat(model) end
     if HasModelLoaded(model) then return model end
 
@@ -42,7 +42,7 @@ end
 
 ---@param animDict string
 ---@param timeout number? Approximate milliseconds to wait for the dictionary to load. Default is 10000.
-function Request.AnimDict(animDict, timeout)
+function module.animDict(animDict, timeout)
     if HasAnimDictLoaded(animDict) then return animDict end
 
     if type(animDict) ~= 'string' then
@@ -59,7 +59,7 @@ end
 ---@param ptFxName string
 ---@param timeout number? Approximate milliseconds to wait for the particle effect to load. Default is 10000.
 ---@return string ptFxName
-function Request.NamedPtfxAsset(ptFxName, timeout)
+function module.namedPtfxAsset(ptFxName, timeout)
     if HasNamedPtfxAssetLoaded(ptFxName) then return ptFxName end
 
     if type(ptFxName) ~= 'string' then
@@ -69,6 +69,4 @@ function Request.NamedPtfxAsset(ptFxName, timeout)
     return StreamingRequest(RequestNamedPtfxAsset, HasNamedPtfxAssetLoaded, 'ptFxName', ptFxName, timeout)
 end
 
--- TODO: DOESNT WORK YET
-
-return Request
+return module

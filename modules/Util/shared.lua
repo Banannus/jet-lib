@@ -6,7 +6,7 @@
     Copyright © 2025 Linden <https://github.com/thelindat>
 ]]
 
-local module = {}
+local Util = {}
 
 ---@generic T
 ---@param cb fun(): T?
@@ -14,7 +14,7 @@ local module = {}
 ---@param timeout? number | false Error out after `~x` ms. Defaults to 1000, unless set to `false`.
 ---@return T
 ---@async
-function module.waitFor(cb, errMessage, timeout)
+function Util.WaitFor(cb, errMessage, timeout)
     local value = cb()
 
     if value ~= nil then return value end
@@ -40,6 +40,4 @@ function module.waitFor(cb, errMessage, timeout)
     return value
 end
 
--- TODO: DOESNT WORK YET
-
-return module
+return Util
