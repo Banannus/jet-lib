@@ -1,7 +1,7 @@
 CreateThread(function()
-    jet.Money.AddMoney(11, 'cash', 1000)
+    Jet.Money.AddMoney(14, 'cash', 1000)
 end)
 
-jet.Callback.Register('jet-testEvent', function(source, cb)
+Jet.Callback.Register('jet-testEvent', function(source, cb)
     return 'Hejsa'
 end)

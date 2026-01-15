@@ -3,7 +3,7 @@ Registry = {}
 Registry.frameworks = {
     ['es_extended'] = { id = 'esx', object = 'es_extended', getter = 'getSharedObject' },
     ['qb-core'] = { id = 'qb', object = 'qb-core', getter = 'GetCoreObject' },
-    ['qbx_core'] = { id = 'qbx', object = 'qb-core', getter = 'GetCoreObject' }
+    ['qbx_core'] = { id = 'qb', object = 'qb-core', getter = 'GetCoreObject' }
 }
 
 Registry.dependencies = {

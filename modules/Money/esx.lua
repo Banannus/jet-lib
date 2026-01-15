@@ -11,17 +11,17 @@ local function convertMoneyType(moneyType)
 end
 
 function module.addMoney(source, moneyType, amount)
-    local player = jet.Player.GetPlayer(source)
+    local player = Jet.Player.GetPlayer(source)
     return player.addAccountMoney(convertMoneyType(moneyType), amount)
 end
 
 function module.removeMoney(source, moneyType, amount)
-    local player = jet.Player.GetPlayer(source)
+    local player = Jet.Player.GetPlayer(source)
     return player.removeAccountMoney(convertMoneyType(moneyType), amount)
 end
 
 function module.getMoney(source, moneyType)
-    local player = jet.Player.GetPlayer(source)
+    local player = Jet.Player.GetPlayer(source)
     local account = player.getAccount(convertMoneyType(moneyType))
     return account and account.money or 0
 end

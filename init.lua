@@ -42,7 +42,7 @@ end
 
 Dep = detectDependencies()
 
-jet = setmetatable({
+Jet = setmetatable({
     name = 'jet-lib',
     context = IsDuplicityVersion() and 'server' or 'client'
 }, {
@@ -63,22 +63,19 @@ jet = setmetatable({
         setmetatable(env, { __index = _G })
 
         local implFile
-        if key == 'Callback' then
-            implFile = self.context == 'server' and 'server.lua' or 'client.lua'
-        elseif Dep[string.lower(key)] then
+
+        if Dep[string.lower(key)] then
             implFile = ('%s.lua'):format(Dep[string.lower(key)])
         else
             implFile = Dep.framework == 'esx' and 'esx.lua' or (Dep.framework == 'qb' and 'qb.lua' or nil)
         end
 
-        if not implFile then
-            error(('No implementation found for module %s with framework %s'):format(key, tostring(Dep.framework)))
-        end
-
         local implChunk = LoadResourceFile(self.name, ('%s/%s'):format(basePath, implFile))
-        if implChunk then
-            env.impl = assert(load(implChunk, ('@@%s/%s/%s'):format(self.name, basePath, implFile), 't', env))()
+        if not implChunk then 
+            implFile = self.context == 'server' and 'server.lua' or 'client.lua'
+            implChunk = LoadResourceFile(self.name, ('%s/%s'):format(basePath, implFile))
         end
+        env.impl = assert(load(implChunk, ('@@%s/%s/%s'):format(self.name, basePath, implFile), 't', env))()
 
         local module = assert(load(sharedChunk, ('@@%s/%s/shared.lua'):format(self.name, basePath), 't', env))()
         self[key] = module
