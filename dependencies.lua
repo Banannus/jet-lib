@@ -10,7 +10,13 @@ Registry.dependencies = {
     inventory = {
         ['ox_inventory'] = 'ox',
         ['qs-inventory-pro'] = 'qs',
-        ['codem-inventory'] = 'codem'
+        ['qs-inventory'] = 'qs',
+        ['codem-inventory'] = 'codem',
+        ['origen-inventory'] = 'origen',
+        ['qb-inventory'] = 'qb',
+        ['ps-inventory'] = 'qb',
+        ['lj-inventory'] = 'qb',
+        ['renewed-inventory'] = 'qb'
     },
     dispatch = {
         ['linden_outlawalert'] = 'linden',
@@ -21,5 +27,12 @@ Registry.dependencies = {
         ['core_dispatch'] = 'core',
         ['origen_police'] = 'origen',
         ['codem-dispatch'] = 'codem'
+    },
+    notification = {
+        ['ox_lib'] = 'ox',
+    },
+    radialmenu = {
+        ['qb-radialmenu'] = 'qb',
+        ['ox_lib'] = 'ox',
     }
 }

@@ -33,6 +33,10 @@ local function detectDependencies()
         end
     end
 
+    if GetResourceState('ox_lib') == 'started' then
+        deps.oxlib = 'ox'
+    end
+
     return deps
 end
 

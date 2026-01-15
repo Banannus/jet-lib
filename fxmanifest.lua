@@ -10,7 +10,6 @@ client_scripts {
 }
 
 server_scripts {
-    'init.lua',
     'server.lua',
 }
 
@@ -23,6 +22,7 @@ files {
 shared_scripts {
     'dependencies.lua',
     'init.lua',
+    '@ox_lib/init.lua',
 } 
 
 lua54 'yes'

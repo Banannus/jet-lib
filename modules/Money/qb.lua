@@ -1,8 +1,28 @@
-local QB = {}
+local module = {}
 
-function QB.addMoney(source, type, amount)
-    local qbPlayer = QBCore.Functions.GetPlayer(source)
-    return qbPlayer.Functions.AddMoney(type, amount) 
+local function convertMoneyType(moneyType)
+    if moneyType == 'money' and Dep.framework == 'qb' then
+        return 'cash'
+    elseif moneyType == 'cash' and Dep.framework == 'esx' then
+        return 'money'
+    else
+        return moneyType
+    end
 end
 
-return QB
+function module.addMoney(source, moneyType, amount)
+    local player = jet.Player.GetPlayer(source)
+    return player.Functions.AddMoney(convertMoneyType(moneyType), amount)
+end
+
+function module.removeMoney(source, moneyType, amount)
+    local player = jet.Player.GetPlayer(source)
+    return player.Functions.RemoveMoney(convertMoneyType(moneyType), amount)
+end
+
+function module.getMoney(source, moneyType)
+    local player = jet.Player.GetPlayer(source)
+    return player.PlayerData.money[convertMoneyType(moneyType)] or 0
+end
+
+return module

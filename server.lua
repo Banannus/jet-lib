@@ -1,5 +1,5 @@
 CreateThread(function()
-    jet.Inventory.AddItem(11, 'water', 1)
+    jet.Money.AddMoney(11, 'cash', 1000)
 end)
 
 jet.Callback.Register('jet-testEvent', function(source, cb)
