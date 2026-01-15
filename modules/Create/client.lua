@@ -102,9 +102,7 @@ function Create.Ped(Model, Coords, InsideVehicle)
     end
 
     local NetworkId = NetworkGetNetworkIdFromEntity(Ped)
-    while not NetworkDoesEntityExistWithNetworkId(NetworkId) do
-        Wait(100)
-    end
+    while not NetworkDoesEntityExistWithNetworkId(NetworkId) do Wait(100) end
 
     SetNetworkIdCanMigrate(NetworkId, true)
     SetNetworkIdExistsOnAllMachines(NetworkId, true)
