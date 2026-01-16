@@ -1,3 +1,14 @@
+--[[
+    Code originally sourced from ox_lib (https://github.com/overextended/ox_lib).
+    This modified version is part of jet-lib
+    
+    This file is licensed under LGPL-3.0 or higher 
+    (<https://www.gnu.org/licenses/lgpl-3.0.en.html>).
+    
+    Copyright (c) 2025 Linden 
+    (<https://github.com/thelindat/fivem>).
+]]
+
 local Registry = {}
 
 Registry.frameworks = {
@@ -36,11 +47,10 @@ Registry.dependencies = {
         ['ox_lib'] = 'ox',
     },
     mdt = {
-        ['tk_mdt'] = 'tk_mdt',
-        ['lb-tablet'] = 'lb_tablet',
+        ['tk_mdt'] = 'tk_mdt', -- Check lb-tablet last
         ['ps-mdt'] = 'qb',
     }
-}
+} -- TODO: Fix this
 
 local Dep = {}
 
@@ -129,3 +139,6 @@ Jet = setmetatable({
         return module
     end
 })
+
+_ENV.Dep = Dep
+_ENV.Jet = Jet
