@@ -105,6 +105,10 @@ Jet = setmetatable({
     end,
 
     __index = function(self, key)
+        -- First check if it's a call-based export request
+        local existing = rawget(self, key)
+        if existing then return existing end
+
         local basePath = ('modules/%s'):format(key)
         local sharedPath = ('%s/shared.lua'):format(basePath)
         local sharedChunk = LoadResourceFile(self.name, sharedPath)
@@ -117,9 +121,19 @@ Jet = setmetatable({
         setmetatable(env, { __index = _G })
 
         local implFile
+        local depKey = string.lower(key)
 
-        if Dep[string.lower(key)] then
-            implFile = ('%s.lua'):format(Dep[string.lower(key)])
+        if not Dep[depKey] and Registry.dependencies[depKey] then
+            for resKey, depId in pairs(Registry.dependencies[depKey]) do
+                if GetResourceState(resKey) == 'started' then
+                    Dep[depKey] = depId
+                    break
+                end
+            end
+        end
+
+        if Dep[depKey] then
+            implFile = ('%s.lua'):format(Dep[depKey])
         else
             implFile = Dep.framework == 'esx' and 'esx.lua' or (Dep.framework == 'qb' and 'qb.lua' or nil)
         end
@@ -137,8 +151,83 @@ Jet = setmetatable({
         local module = assert(load(sharedChunk, ('@@%s/%s/shared.lua'):format(self.name, basePath), 't', env))()
         self[key] = module
         return module
-    end
+    end,
+
+    __call = call,
 })
 
 _ENV.Dep = Dep
 _ENV.Jet = Jet
+
+local jetCacheEvents = {}
+
+local context = IsDuplicityVersion() and 'server' or 'client'
+local initialCache = { 
+    game = GetGameName(), 
+    resource = GetCurrentResourceName() 
+}
+
+if context == 'client' then
+    initialCache.playerId = PlayerId()
+    initialCache.serverId = GetPlayerServerId(initialCache.playerId)
+end
+
+local jetCache = setmetatable(initialCache, {
+    __index = function(self, key)
+        if not jetCacheEvents[key] then
+            jetCacheEvents[key] = {}
+
+            AddEventHandler(('jet-lib:jetCache:%s'):format(key), function(value)
+                local oldValue = rawget(self, key)
+                local events = jetCacheEvents[key]
+
+                for i = 1, #events do
+                    Citizen.CreateThreadNow(function()
+                        events[i](value, oldValue)
+                    end)
+                end
+
+                rawset(self, key, value)
+            end)
+        end
+
+        return rawget(self, key) or rawset(self, key, false)[key]
+    end,
+
+    __call = function(self, key, func, timeout)
+        local value = rawget(self, key)
+
+        if value == nil then
+            value = func()
+
+            rawset(self, key, value)
+
+            if timeout then SetTimeout(timeout, function() self[key] = nil end) end
+        end
+
+        return value
+    end,
+})
+
+function Jet.onCache(key, cb)
+    if not jetCacheEvents[key] then
+        getmetatable(jetCache).__index(jetCache, key)
+    end
+
+    table.insert(jetCacheEvents[key], cb)
+end
+
+if GetCurrentResourceName() == 'jet-lib' then
+    _ENV.jetCache = jetCache
+    _ENV.jetCacheEvents = jetCacheEvents
+
+    exports('getCache', function(key)
+        return jetCache[key]
+    end)
+else
+    _ENV.jetCache = setmetatable({}, {
+        __index = function(self, key)
+            return exports['jet-lib']:getCache(key)
+        end
+    })
+end

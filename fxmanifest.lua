@@ -28,6 +28,5 @@ server_scripts {
     'resource/server/*.lua',
 }
 
-
 lua54 'yes'
 

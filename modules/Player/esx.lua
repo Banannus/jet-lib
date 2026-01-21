@@ -6,12 +6,14 @@ end
 
 function module.getIdentifier(source)
     local player = Dep.object.GetPlayerFromId(source)
-    return player and player.identifier or nil
+    if not player then return nil end
+    return player.identifier
 end
 
 function module.hasJob(source, filter)
     local filterType = type(filter)
     local player = Dep.object.GetPlayerFromId(source)
+    if not player then return false end
 
     if filterType == 'string' then
         if player.job.name == filter then
@@ -26,6 +28,7 @@ function module.hasJob(source, filter)
             end
         end
     end
+    return false
 end
 
 function module.hasGrade(source, jobName, gradeLevel)

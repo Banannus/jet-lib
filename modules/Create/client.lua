@@ -37,7 +37,6 @@ function module.vehicle(Model, Coords, Props)
 
     SetModelAsNoLongerNeeded(Model)
 
-    print("Created vehicle:", Vehicle, "NetworkId:", NetworkId) --- IGNORE ---
     return Vehicle, NetworkId
 end
 
