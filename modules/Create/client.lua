@@ -28,12 +28,15 @@ function module.vehicle(Model, Coords, Props)
 
     SetEntityAsMissionEntity(Vehicle, true, true)
     SetEntityVisible(Vehicle, true, false)
+
+    local netVeh = NetworkGetEntityFromNetworkId(NetworkId)
+    while not DoesEntityExist(netVeh) do Wait(100) end
+    NetworkId = NetworkGetNetworkIdFromEntity(netVeh)
     
     if Props then Jet.Vehicle.SetProperties(Vehicle, Props) end
 
-    SetTimeout(100, function()
-       Creating = false
-    end)
+    Wait(100)
+    Creating = false
 
     SetModelAsNoLongerNeeded(Model)
 

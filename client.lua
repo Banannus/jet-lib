@@ -1,5 +1,0 @@
-RegisterCommand('jet-test', function()
-    Jet.Callback.Trigger('jet-testEvent', false, function(response)
-        print('Callback response:', response)
-    end)
-end)

@@ -40,4 +40,11 @@ function Inventory.CanCarryItem(source, item, count, metadata)
     return impl.canCarryItem(source, item, count, metadata)
 end
 
+---Retrieves the player's entire inventory
+---@param source number The player server ID
+---@return table inventory The player's inventory items
+function Inventory.GetInventory(source)
+    return impl.getInventory(source)
+end
+
 return Inventory

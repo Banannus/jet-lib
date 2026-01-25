@@ -17,4 +17,8 @@ function module.canCarryItem(source, item, count, metadata)
     return true
 end
 
+function module.getInventory(source)
+    return inventory:GetInventory(source)
+end
+
 return module

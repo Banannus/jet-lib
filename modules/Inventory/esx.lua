@@ -26,4 +26,9 @@ function module.canCarryItem(source, item, count, metadata)
     return false
 end
 
+function module.getInventory(source)
+    local player = Jet.Player.GetPlayer(source)
+    return player.getInventory()
+end
+
 return module

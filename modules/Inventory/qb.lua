@@ -30,4 +30,9 @@ function module.canCarryItem(source, item, count, metadata)
     return inventory:CanAddItem(source, item, count)
 end
 
+function module.getInventory(source)
+    return inventory:GetInventory(source)
+end
+
+
 return module

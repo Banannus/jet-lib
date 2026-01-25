@@ -40,4 +40,62 @@ function Util.WaitFor(cb, errMessage, timeout)
     return value
 end
 
+function Util.GenerateRandomPlate(checkIfExists, seed)
+    seed = seed or "1AA111AA"
+
+    local CHARSET_NUMBERS, CHARSET_LETTERS = "0123456789", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    local attempts = 0
+
+    while attempts < 20 do
+        local i, plate = 0, ""
+
+        while i <= seed:len() do
+            local char = seed:sub(i, i)
+
+            if char == "A" then
+                local randLetterPos = math.random(1, #CHARSET_LETTERS)
+                local randLetter = CHARSET_LETTERS:sub(randLetterPos, randLetterPos)
+                plate = plate .. randLetter
+            elseif char == "1" then
+                local randNumberPos = math.random(1, #CHARSET_NUMBERS)
+                local randNumber = CHARSET_NUMBERS:sub(randNumberPos, randNumberPos)
+                plate = plate .. randNumber
+            elseif char == "^" then
+                i = i + 1
+                if i <= seed:len() then plate = plate .. seed:sub(i, i) end
+            else
+                plate = plate .. char
+            end
+
+            i = i + 1
+        end
+
+        plate = plate:upper()
+
+        if plate:len() > 8 then
+            error("^1[ERROR] You are generating a plate with more than 8 characters.")
+            return false
+        end
+
+        if not checkIfExists then return plate end
+
+        local vehiclesTable = nil
+        if Dep.framework == 'esx' then
+            vehiclesTable = 'owned_vehicles'
+        else
+            vehiclesTable = 'player_vehicles'
+        end
+
+        local result = MySQL.scalar.await(
+            "SELECT plate FROM " .. vehiclesTable .. " WHERE plate = ?", {
+                plate,
+            })
+        if not result then return plate end
+
+        attempts = attempts + 1
+    end
+
+    return false
+end
+
 return Util
