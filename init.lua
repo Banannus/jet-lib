@@ -163,8 +163,8 @@ local jetCacheEvents = {}
 
 local context = IsDuplicityVersion() and 'server' or 'client'
 local initialCache = { 
-    game = GetGameName(), 
-    resource = GetCurrentResourceName() 
+    game = GetGameName(),
+    resource = GetCurrentResourceName()
 }
 
 if context == 'client' then
@@ -230,4 +230,58 @@ else
             return exports['jet-lib']:getCache(key)
         end
     })
+end
+
+local intervals = {}
+--- Dream of a world where this PR gets accepted.
+---@param callback function | number
+---@param interval? number
+---@param ... any
+function SetInterval(callback, interval, ...)
+    interval = interval or 0
+
+    if type(interval) ~= 'number' then
+        return error(('Interval must be a number. Received %s'):format(json.encode(interval --[[@as unknown]])))
+    end
+
+    local cbType = type(callback)
+
+    if cbType == 'number' and intervals[callback] then
+        intervals[callback] = interval or 0
+        return
+    end
+
+    if cbType ~= 'function' then
+        return error(('Callback must be a function. Received %s'):format(cbType))
+    end
+
+    local args, id = { ... }
+
+    Citizen.CreateThreadNow(function(ref)
+        id = ref
+        intervals[id] = interval or 0
+        repeat
+            interval = intervals[id]
+            Wait(interval)
+
+            if interval < 0 then break end
+            callback(table.unpack(args))
+        until false
+        intervals[id] = nil
+    end)
+
+    return id
+end
+
+---@param id number
+function ClearInterval(id)
+    if type(id) ~= 'number' then
+        return error(('Interval id must be a number. Received %s'):format(json.encode(id --[[@as unknown]])))
+    end
+
+    if not intervals[id] then
+        return error(('No interval exists with id %s'):format(id))
+    end
+
+    intervals[id] = -1
 end
