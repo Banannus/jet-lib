@@ -1,0 +1,31 @@
+{
+  "ui": {
+    "dashboard": {
+      "title": "Status Panel",
+      "status": "Server Status",
+      "online": "Online",
+      "offline": "Offline",
+      "players": "Players Online",
+      "time": "Server Time",
+      "coordinates": "Player Coordinates",
+      "buttons": {
+        "getCoords": "Get Coords",
+        "reset": "Reset",
+        "close": "Close UI (ESC)"
+      }
+    },
+    "notifications": {
+      "success": "Success",
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete"
+  }
+}

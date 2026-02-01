@@ -1,15 +1,16 @@
 --[[
-    Jet-lib Callback System (Server-side)
-    Based on ox_lib callback system
+    https://github.com/overextended/ox_lib
+
+    This file is licensed under LGPL-3.0 or higher <https://www.gnu.org/licenses/lgpl-3.0.en.html>
+
+    Copyright © 2025 Linden <https://github.com/thelindat>
 ]]
 
-local validation = require 'modules.Callback.validation'
 local pendingCallbacks = {}
 local cbEvent = '__jet_cb_%s'
-local callbackTimeout = GetConvarInt('jet:callbackTimeout', 30000)
-local resourceName = cache and cache.resource or GetCurrentResourceName()
+local callbackTimeout = GetConvarInt('jet:callbackTimeout', 300000)
 
-RegisterNetEvent(cbEvent:format(resourceName), function(key, ...)
+RegisterNetEvent(cbEvent:format(cache.resource), function(key, ...)
     local cb = pendingCallbacks[key]
 
     if not cb then return end
@@ -34,8 +35,8 @@ local function triggerClientCallback(_, event, playerId, cb, ...)
         key = ('%s:%s:%s'):format(event, math.random(0, 100000), playerId)
     until not pendingCallbacks[key]
 
-    TriggerClientEvent('jet:validateCallback', playerId, event, resourceName, key)
-    TriggerClientEvent(cbEvent:format(event), playerId, resourceName, key, ...)
+    TriggerClientEvent('jet-lib:validateCallback', playerId, event, cache.resource, key)
+    TriggerClientEvent(cbEvent:format(event), playerId, cache.resource, key, ...)
 
     ---@type promise | false
     local promise = not cb and promise.new()
@@ -65,29 +66,31 @@ local function triggerClientCallback(_, event, playerId, cb, ...)
     end
 end
 
-local Callback = {}
+---@overload fun(event: string, playerId: number, cb: function, ...)
+local Callback = setmetatable({}, {
+    __call = function(_, event, playerId, cb, ...)
+        if not cb then
+            warn(("callback event '%s' does not have a function to callback to and will instead await\nuse Jet.callback.await or a regular event to remove this warning")
+                :format(event))
+        else
+            local cbType = type(cb)
 
--- Main callback trigger
-Callback.Trigger = function(event, playerId, cb, ...)
-    if not cb then
-        print(("callback event '%s' does not have a function to callback to and will instead await\nuse Callback.Await or a regular event to remove this warning"):format(event))
-    else
-        local cbType = type(cb)
+            if cbType == 'table' and getmetatable(cb)?.__call then
+                cbType = 'function'
+            end
 
-        if cbType == 'table' and getmetatable(cb) and getmetatable(cb).__call then
-            cbType = 'function'
+            assert(cbType == 'function', ("expected argument 3 to have type 'function' (received %s)"):format(cbType))
         end
 
-        assert(cbType == 'function', ("expected argument 3 to have type 'function' (received %s)"):format(cbType))
+        return triggerClientCallback(_, event, playerId, cb, ...)
     end
-
-    return triggerClientCallback(nil, event, playerId, cb, ...)
-end
+})
 
 ---@param event string
 ---@param playerId number
 --- Sends an event to a client and halts the current thread until a response is returned.
-function Callback.Await(event, playerId, ...)
+---@diagnostic disable-next-line: duplicate-set-field
+function Callback.await(event, playerId, ...)
     return triggerClientCallback(nil, event, playerId, false, ...)
 end
 
@@ -109,18 +112,15 @@ local pcall = pcall
 ---@param name string
 ---@param cb function
 ---Registers an event handler and callback function to respond to client requests.
-function Callback.Register(name, cb)
-    local event = cbEvent:format(name)
+---@diagnostic disable-next-line: duplicate-set-field
+function Callback.register(name, cb)
+    event = cbEvent:format(name)
 
-    validation.setValidCallback(name, true)
+    Jet.setValidCallback(name, true)
 
     RegisterNetEvent(event, function(resource, key, ...)
         TriggerClientEvent(cbEvent:format(resource), source, key, callbackResponse(pcall(cb, source, ...)))
     end)
 end
-
--- Expose validation functions
-Callback.setValidCallback = validation.setValidCallback
-Callback.isCallbackValid = validation.isCallbackValid
 
 return Callback

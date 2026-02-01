@@ -1,4 +1,4 @@
-local module = {}
+local Create = {}
 
 local Creating = false
 
@@ -7,7 +7,7 @@ local Creating = false
 ---@param Props table?
 ---@return number Vehicle
 ---@return number NetworkId
-function module.vehicle(Model, Coords, Props)
+function Create.Vehicle(Model, Coords, Props)
     while Creating do Wait(100) end
     Creating = true
 
@@ -47,7 +47,7 @@ end
 ---@param Coords vector4
 ---@return number Prop
 ---@return number NetworkId
-function module.prop(Model, Coords)
+function Create.Prop(Model, Coords)
     while Creating do Wait(100) end
     Creating = true
 
@@ -84,7 +84,7 @@ end
 ---@param InsideVehicle table?
 ---@return number Ped
 ---@return number NetworkId
-function module.ped(Model, Coords, InsideVehicle)
+function Create.Ped(Model, Coords, InsideVehicle)
     while Creating do Wait(100) end
     Creating = true
     
@@ -126,4 +126,4 @@ function module.ped(Model, Coords, InsideVehicle)
     return Ped, NetworkId
 end
 
-return module
+return Create
