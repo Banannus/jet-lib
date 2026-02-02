@@ -116,7 +116,7 @@ local pcall = pcall
 function Callback.register(name, cb)
     event = cbEvent:format(name)
 
-    Jet.setValidCallback(name, true)
+    Jet.SetValidCallback(name, true)
 
     RegisterNetEvent(event, function(resource, key, ...)
         TriggerClientEvent(cbEvent:format(resource), source, key, callbackResponse(pcall(cb, source, ...)))

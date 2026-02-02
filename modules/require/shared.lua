@@ -40,7 +40,7 @@ local function getModuleInfo(modName)
 
         resource = src:match('^@@([^/]+)/.+')
 
-        if resource and not src:find('^@@jet-lib/imports/require') then
+        if resource and not src:find('^@@jet%-lib/modules/require') then
             return resource, modName
         end
 
@@ -121,11 +121,15 @@ package.searchers = {
 ---@param modName string
 ---@return unknown
 local function Require(modName)
-    if type(modName) ~= 'string' then error(("module name must be a string (received '%s')"):format(modName), 3) end
+    if type(modName) ~= 'string' then
+        error(("module name must be a string (received '%s')"):format(modName), 3)
+    end
 
     local module = loaded[modName]
 
-    if module == '__loading' then error(("^1circular-dependency occurred when loading module '%s'^0"):format(modName), 2) end
+    if module == '__loading' then
+        error(("^1circular-dependency occurred when loading module '%s'^0"):format(modName), 2)
+    end
 
     if module ~= nil then return module end
 

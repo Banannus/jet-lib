@@ -45,8 +45,8 @@ Jet = setmetatable({
 
 cache = { resource = Jet.name }
 
-function Jet.Initialized() return true end
+function Jet.initialized() return true end
 
-function Jet.GetDep(module)return Dep[module] end
+function Jet.getdep(module)return Dep[module] end
 
 require = Jet.Require

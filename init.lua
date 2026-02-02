@@ -17,7 +17,7 @@ if GetResourceState(jetlib) ~= 'started' then
     error('^1jet-lib must be started before this resource.^0', 0)
 end
 
-local status = export.Initialized()
+local status = export.initialized()
 if status ~= true then error(status, 2) end
 
 -- Ignore invalid types during msgpack.pack (e.g. userdata)
@@ -39,7 +39,7 @@ local function loadModule(self, module)
     local chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, context))
     local shared = LoadResourceFile(jetlib, ('%s/shared.lua'):format(dir))
 
-    local dep = export.GetDep(module)
+    local dep = export.getdep(module)
 
     if dep then
         chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, ('%s_%s'):format(context, dep.value))) or chunk
@@ -75,6 +75,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 local function call(self, index, ...)
+    index = string.lower(index)
     local module = rawget(self, index)
 
     if not module then

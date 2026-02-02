@@ -86,7 +86,7 @@ local function triggerServerCallback(_, event, delay, cb, ...)
 end
 
 ---@overload fun(event: string, delay: number | false, cb: function, ...)
-Jet.callback = setmetatable({}, {
+local Callback = setmetatable({}, {
     __call = function(_, event, delay, cb, ...)
         if not cb then
             warn(("callback event '%s' does not have a function to callback to and will instead await\nuse Jet.callback.await or a regular event to remove this warning")
@@ -109,7 +109,7 @@ Jet.callback = setmetatable({}, {
 ---@param delay? number | false prevent the event from being called for the given time.
 ---Sends an event to the server and halts the current thread until a response is returned.
 ---@diagnostic disable-next-line: duplicate-set-field
-function Jet.callback.await(event, delay, ...)
+function Callback.Await(event, delay, ...)
     return triggerServerCallback(nil, event, delay, false, ...)
 end
 
@@ -132,14 +132,14 @@ local pcall = pcall
 ---@param cb function
 ---Registers an event handler and callback function to respond to server requests.
 ---@diagnostic disable-next-line: duplicate-set-field
-function Jet.callback.register(name, cb)
+function Callback.Register(name, cb)
     event = cbEvent:format(name)
 
-    Jet.setValidCallback(name, true)
+    Jet.SetValidCallback(name, true)
 
     RegisterNetEvent(event, function(resource, key, ...)
         TriggerServerEvent(cbEvent:format(resource), key, callbackResponse(pcall(cb, ...)))
     end)
 end
 
-return Jet.callback
+return Callback

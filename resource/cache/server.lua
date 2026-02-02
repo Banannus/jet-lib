@@ -41,12 +41,12 @@ local function OnJobChange(src, newJob, oldJob)
 end
 
 CreateThread(function()
-    if Dep.framework == 'esx' then
+    if Dep.framework.value == 'esx' then
         AddEventHandler('esx:setJob', function(source, job, lastJob) OnJobChange(source, job, lastJob) end)
         AddEventHandler('esx:playerLoaded', function (source, xPlayer, isNew) OnJobChange(source, xPlayer.job, nil) end)
-    elseif Dep.framework == 'qb' or Config.Framework == 'qbx' then
+    elseif Dep.framework.value == 'qb' or Dep.framework.value == 'qbx' then
         RegisterNetEvent('QBCore:Server:OnJobUpdate', function(src, job) OnJobChange(src, job, LastJobs[src]) end)
-        RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function() local src = source local Player = Dep.object.Functions.GetPlayer(src) if Player then OnJobChange(src, Player.PlayerData.job, nil) end end)
+        RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function() local src = source local Player = Dep.framework.object.Functions.GetPlayer(src) if Player then OnJobChange(src, Player.PlayerData.job, nil) end end)
     end
 
     AddEventHandler('playerDropped', function() 
