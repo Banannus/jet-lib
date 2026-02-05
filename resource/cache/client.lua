@@ -62,3 +62,20 @@ end)
 function Jet.cache(key)
 	return cache[key]
 end
+
+RegisterNetEvent('jet-lib:client:onJobChange', function(newJob, oldJob)
+	if newJob then
+		cache:set('job', {
+			name = newJob.name,
+			label = newJob.label,
+			grade = newJob.grade,
+			grade_name = newJob.grade_name or newJob.gradeLabel,
+			grade_label = newJob.grade_label or newJob.gradeLabel,
+			isBoss = newJob.isBoss or newJob.grade_name == 'boss'
+		})
+		cache:set('grade', newJob.grade)
+	else
+		cache:set('job', nil)
+		cache:set('grade', nil)
+	end
+end)

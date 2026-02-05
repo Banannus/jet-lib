@@ -90,7 +90,7 @@ local Callback = setmetatable({}, {
 ---@param playerId number
 --- Sends an event to a client and halts the current thread until a response is returned.
 ---@diagnostic disable-next-line: duplicate-set-field
-function Callback.await(event, playerId, ...)
+function Callback.Await(event, playerId, ...)
     return triggerClientCallback(nil, event, playerId, false, ...)
 end
 
@@ -113,7 +113,7 @@ local pcall = pcall
 ---@param cb function
 ---Registers an event handler and callback function to respond to client requests.
 ---@diagnostic disable-next-line: duplicate-set-field
-function Callback.register(name, cb)
+function Callback.Register(name, cb)
     event = cbEvent:format(name)
 
     Jet.SetValidCallback(name, true)
