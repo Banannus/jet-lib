@@ -28,12 +28,12 @@ local resources = {
         -- ['codem-dispatch'] = 'codem'
     },
     notify = {
-        -- ['ox_lib'] = 'ox',
+        ['ox_lib'] = 'ox',
     },
-    radial = {
-        -- ['qb-radialmenu'] = 'qb',
-        -- ['ox_lib'] = 'ox',
-    }
+    radialmenu = {
+        ['qb-radialmenu'] = 'qb',
+        ['ox_lib'] = 'ox',
+    },
 }
 
 local function InitiateDependencies()
@@ -57,4 +57,5 @@ local function InitiateDependencies()
         end
     end
 end
+
 CreateThread(InitiateDependencies)

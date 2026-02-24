@@ -15,7 +15,6 @@ export interface LocaleData {
 export async function fetchLocaleFromConfig(): Promise<Locale> {
 	try {
 		const data = await fetchNui<LocaleData>('getLocale');
-		console.log("Fetched locale from config:", data.locale);
 		return data.locale || 'en';
 	} catch (error) {
 		console.warn('Failed to fetch locale from config (likely not on FiveM server), defaulting to "en"', error);
@@ -39,7 +38,6 @@ export function createLocaleStore() {
 	// Initialize the locale from config
 	fetchLocaleFromConfig()
 		.then((locale) => {
-			console.log("Setting locale to:", locale);
 			localeCodeStore.set(locale);
 			// Load the locale data
 			loadLocale(locale).then((data) => localesStore.set(data));

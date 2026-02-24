@@ -11,12 +11,18 @@ export interface TextUIStyle {
     [key: string]: string | number;
 }
 
+export interface TextUIKeybind {
+    key: string;
+    color?: string;
+}
+
 export interface TextUIData {
     position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'middle-left' | 'middle-right';
     icon?: string | TextUIIcon;
     color: string;
     text: string;
     style?: TextUIStyle;
+    keybind?: TextUIKeybind;
 }
 
 export const textUIStore = writable<TextUIData>({

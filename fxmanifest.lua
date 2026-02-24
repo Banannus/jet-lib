@@ -14,6 +14,7 @@ shared_scripts {
     'dependencies.lua',
     'resource/init.lua',
     'resource/**/shared.lua',
+    'config.lua',
 }
 
 files {

@@ -19,7 +19,6 @@
 	});
 
 	useNuiEvent("setVisibleText", (data: any) => {
-		console.log('TextUIVisibilityProvider received data:', data);
 		if (!data) {
 			visibility.hide();
 			return;

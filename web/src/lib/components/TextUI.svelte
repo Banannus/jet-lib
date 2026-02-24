@@ -7,6 +7,7 @@
         link.href = 'https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap';
         document.head.appendChild(link);
     }
+    import { fade } from 'svelte/transition';
     import Icon from "$lib/components/Icon.svelte";
     import { textUIStore } from "$lib/stores/TextUI";
 
@@ -63,16 +64,52 @@
 </script>
 
 {#if $textUIStore}
-<div class="absolute p-3 rounded-md shadow-lg bg-[#2A2A2A]" style={`font-family: 'Roboto', sans-serif;${positionStyles[$textUIStore.position] || ""}background-color:${$textUIStore.color};border:2px solid; border-color:${borderColor};${customStyle}`} >
-    <div class="flex items-center space-x-2">
-        {#if iconProps.name}
-            <Icon {...iconProps} />
-        {/if}
-        <span class="text-sm text-white">
-            {#each $textUIStore.text.split(/\n/g) as line, i (i)}
-                {#if i > 0}<br>{/if}{line}
-            {/each}
-        </span>
+<div class="flex items-center space-x-3" style={`font-family: 'Roboto', sans-serif;${positionStyles[$textUIStore.position] || ""};position: absolute;`} transition:fade={{ duration: 200 }}>
+    {#if $textUIStore.keybind}
+        <div class="keybind-container" style="background-color: {$textUIStore.color}; border: 2px solid {$textUIStore.keybind.color || borderColor}; color: {$textUIStore.keybind.color || 'white'};">
+            <span class="keybind-key">{$textUIStore.keybind.key}</span>
+        </div>
+    {/if}
+    <div class="text-container" style={`background-color:${$textUIStore.color};border:2px solid; border-color:${borderColor};${customStyle}`}>
+        <div class="flex items-center space-x-2">
+            {#if iconProps.name}
+                <Icon {...iconProps} />
+            {/if}
+            <span class="text-sm text-white">
+                {#each $textUIStore.text.split(/\n/g) as line, i (i)}
+                    {#if i > 0}<br>{/if}{line}
+                {/each}
+            </span>
+        </div>
     </div>
 </div>
 {/if}
+
+<style>
+    .keybind-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        flex-shrink: 0;
+    }
+
+    .text-container {
+        padding: 12px 16px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+    }
+
+    .keybind-key {
+        font-size: 16px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
