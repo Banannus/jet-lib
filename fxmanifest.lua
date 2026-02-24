@@ -5,28 +5,31 @@ Author 'bndev & manimods'
 Description 'Library for bndev and manimods resources'
 Version '1.0.0'
 
+lua54 'yes'
+
+-- ui_page 'http://localhost:5173/'
+ui_page 'web/build/index.html'
 
 shared_scripts {
-    '@ox_lib/init.lua',
-    'init.lua',
+    'dependencies.lua',
+    'resource/init.lua',
+    'resource/**/shared.lua',
+    'config.lua',
 }
 
 files {
     'init.lua',
-    'modules/**/*.lua',
-    'modules/**/*.lua',
-    'modules/**/*.lua',
+    'modules/**/client.lua',
+    'modules/**/shared.lua',
+    'modules/**/client_*.lua',
+    'web/build/index.html',
+    'web/build/**/*'
 }
 
 client_scripts {
-    'client.lua',
-    'resource/client/*.lua',
+    'resource/**/client.lua'
 }
 
 server_scripts {
-    'server.lua',
-    'resource/server/*.lua',
+    'resource/**/server.lua'
 }
-
-lua54 'yes'
-

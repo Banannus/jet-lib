@@ -1,236 +1,110 @@
+---@meta
 --[[
-    Code originally sourced from ox_lib (https://github.com/overextended/ox_lib).
-    This modified version is part of jet-lib
-    
-    This file is licensed under LGPL-3.0 or higher 
-    (<https://www.gnu.org/licenses/lgpl-3.0.en.html>).
-    
-    Copyright (c) 2025 Linden 
-    (<https://github.com/thelindat/fivem>).
+    https://github.com/overextended/jet-lib
+
+    This file is licensed under LGPL-3.0 or higher <https://www.gnu.org/licenses/lgpl-3.0.en.html>
+
+    Copyright © 2025 Linden <https://github.com/thelindat>
 ]]
 
-local Registry = {}
+local resourceName = GetCurrentResourceName()
 
-Registry.frameworks = {
-    ['es_extended'] = { id = 'esx', object = 'es_extended', getter = 'getSharedObject' },
-    ['qb-core'] = { id = 'qb', object = 'qb-core', getter = 'GetCoreObject' },
-    ['qbx_core'] = { id = 'qb', object = 'qb-core', getter = 'GetCoreObject' }
-}
+local jetlib = 'jet-lib'
 
-Registry.dependencies = {
-    inventory = {
-        ['ox_inventory'] = 'ox',
-        ['qs-inventory-pro'] = 'qs',
-        ['qs-inventory'] = 'qs',
-        ['codem-inventory'] = 'codem',
-        ['origen-inventory'] = 'origen',
-        ['qb-inventory'] = 'qb',
-        ['ps-inventory'] = 'qb',
-        ['lj-inventory'] = 'qb',
-        ['renewed-inventory'] = 'qb'
-    },
-    dispatch = {
-        ['linden_outlawalert'] = 'linden',
-        ['cd_dispatch'] = 'cd',
-        ['fd_dispatch'] = 'fd',
-        ['ps-dispatch'] = 'ps',
-        ['qs-dispatch'] = 'qs',
-        ['core_dispatch'] = 'core',
-        ['origen_police'] = 'origen',
-        ['codem-dispatch'] = 'codem'
-    },
-    notification = {
-        ['ox_lib'] = 'ox',
-    },
-    radialmenu = {
-        ['qb-radialmenu'] = 'qb',
-        ['ox_lib'] = 'ox',
-    },
-    mdt = {
-        ['tk_mdt'] = 'tk_mdt', -- Check lb-tablet last
-        ['ps-mdt'] = 'qb',
-    }
-} -- TODO: Fix this
+local export = exports[jetlib]
 
-local Dep = {}
-
-local function initFramework(fw)
-    if GetResourceState(fw.object) ~= 'started' then return nil end
-    local getter = fw.getter
-    if not exports[fw.object][getter] then return nil end
-    return exports[fw.object][getter]()
+if GetResourceState(jetlib) ~= 'started' then
+    error('^1jet-lib must be started before this resource.^0', 0)
 end
 
-local function detectFramework()
-    for _, fw in pairs(Registry.frameworks) do
-        local obj = initFramework(fw)
-        if obj then
-            return fw.id, obj
-        end
+local status = export.initialized()
+if status ~= true then error(status, 2) end
+
+-- Ignore invalid types during msgpack.pack (e.g. userdata)
+msgpack.setoption('ignore_invalid', true)
+
+-----------------------------------------------------------------------------------------------
+-- Module
+-----------------------------------------------------------------------------------------------
+
+local LoadResourceFile = LoadResourceFile
+local context = IsDuplicityVersion() and 'server' or 'client'
+
+function noop() end
+
+local function loadModule(self, module)
+    module = string.lower(module)
+
+    local dir = ('modules/%s'):format(module)
+    local chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, context))
+    local shared = LoadResourceFile(jetlib, ('%s/shared.lua'):format(dir))
+
+    local dep = export.getdep(module)
+
+    if dep then
+        chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, ('%s_%s'):format(context, dep.value))) or chunk
     end
-    return nil, nil
-end
 
-local function detectDependencies()
-    local deps = {}
-    local framework, frameworkObj = detectFramework()
+    if shared then
+        chunk = (chunk and ('%s\n%s'):format(shared, chunk)) or shared
+    end
 
-    deps.framework = framework
-    deps.object = frameworkObj
+    if chunk then
+        local fn, err = load(chunk, ('@@jet-lib/modules/%s/%s.lua'):format(module, context))
 
-    for depType, depList in pairs(Registry.dependencies) do
-        for resKey, depId in pairs(depList) do
-            if GetResourceState(resKey) == 'started' then
-                deps[depType] = depId
-                break
+        if not fn or err then
+            if shared then
+                -- lib.print.warn(("An error occurred when importing '@jet-lib/modules/%s'.\nThis is likely caused by improperly updating jet-lib.\n%s'")
+                --     :format(module, err))
+                fn, err = load(shared, ('@@jet-lib/modules/%s/shared.lua'):format(module))
+            end
+
+            if not fn or err then
+                return error(('\n^1Error importing module (%s): %s^0'):format(dir, err), 3)
             end
         end
-    end
 
-    if GetResourceState('ox_lib') == 'started' then
-        deps.oxlib = 'ox'
+        local result = fn()
+        self[module] = result or noop
+        return self[module]
     end
-
-    return deps
 end
 
-Dep = detectDependencies()
+-----------------------------------------------------------------------------------------------
+-- API
+-----------------------------------------------------------------------------------------------
 
-Jet = setmetatable({
+local function call(self, index, ...)
+    index = string.lower(index)
+    local module = rawget(self, index)
+
+    if not module then
+        self[index] = noop
+        module = loadModule(self, index)
+
+        if not module then
+            local function method(...)
+                return export[index](nil, ...)
+            end
+
+            if not ... then
+                self[index] = method
+            end
+
+            return method
+        end
+    end
+
+    return module
+end
+
+local Jet = setmetatable({
     name = 'jet-lib',
-    context = IsDuplicityVersion() and 'server' or 'client'
+    context = context,
 }, {
-    __newindex = function(self, key, value)
-        rawset(self, key, value)
-    end,
-
-    __index = function(self, key)
-        -- First check if it's a call-based export request
-        local existing = rawget(self, key)
-        if existing then return existing end
-
-        local basePath = ('modules/%s'):format(key)
-        local sharedPath = ('%s/shared.lua'):format(basePath)
-        local sharedChunk = LoadResourceFile(self.name, sharedPath)
-
-        if not sharedChunk then
-            error(('Module %s does not exist!'):format(key))
-        end
-
-        local env = { Dep = Dep }
-        setmetatable(env, { __index = _G })
-
-        local implFile
-        local depKey = string.lower(key)
-
-        if not Dep[depKey] and Registry.dependencies[depKey] then
-            for resKey, depId in pairs(Registry.dependencies[depKey]) do
-                if GetResourceState(resKey) == 'started' then
-                    Dep[depKey] = depId
-                    break
-                end
-            end
-        end
-
-        if Dep[depKey] then
-            implFile = ('%s.lua'):format(Dep[depKey])
-        else
-            implFile = Dep.framework == 'esx' and 'esx.lua' or (Dep.framework == 'qb' and 'qb.lua' or nil)
-        end
-
-        local implChunk = LoadResourceFile(self.name, ('%s/%s'):format(basePath, implFile))
-        if not implChunk then 
-            implFile = self.context == 'server' and 'server.lua' or 'client.lua'
-            implChunk = LoadResourceFile(self.name, ('%s/%s'):format(basePath, implFile))
-        end
-        
-        if implChunk then
-            env.impl = assert(load(implChunk, ('@@%s/%s/%s'):format(self.name, basePath, implFile), 't', env))()
-        end
-
-        local module = assert(load(sharedChunk, ('@@%s/%s/shared.lua'):format(self.name, basePath), 't', env))()
-        self[key] = module
-        return module
-    end,
-
+    __index = call,
     __call = call,
 })
-
-_ENV.Dep = Dep
-_ENV.Jet = Jet
-
-local jetCacheEvents = {}
-
-local context = IsDuplicityVersion() and 'server' or 'client'
-local initialCache = { 
-    game = GetGameName(),
-    resource = GetCurrentResourceName()
-}
-
-if context == 'client' then
-    initialCache.playerId = PlayerId()
-    initialCache.serverId = GetPlayerServerId(initialCache.playerId)
-end
-
-local jetCache = setmetatable(initialCache, {
-    __index = function(self, key)
-        if not jetCacheEvents[key] then
-            jetCacheEvents[key] = {}
-
-            AddEventHandler(('jet-lib:jetCache:%s'):format(key), function(value)
-                local oldValue = rawget(self, key)
-                local events = jetCacheEvents[key]
-
-                for i = 1, #events do
-                    Citizen.CreateThreadNow(function()
-                        events[i](value, oldValue)
-                    end)
-                end
-
-                rawset(self, key, value)
-            end)
-        end
-
-        return rawget(self, key) or rawset(self, key, false)[key]
-    end,
-
-    __call = function(self, key, func, timeout)
-        local value = rawget(self, key)
-
-        if value == nil then
-            value = func()
-
-            rawset(self, key, value)
-
-            if timeout then SetTimeout(timeout, function() self[key] = nil end) end
-        end
-
-        return value
-    end,
-})
-
-function Jet.onCache(key, cb)
-    if not jetCacheEvents[key] then
-        getmetatable(jetCache).__index(jetCache, key)
-    end
-
-    table.insert(jetCacheEvents[key], cb)
-end
-
-if GetCurrentResourceName() == 'jet-lib' then
-    _ENV.jetCache = jetCache
-    _ENV.jetCacheEvents = jetCacheEvents
-
-    exports('getCache', function(key)
-        return jetCache[key]
-    end)
-else
-    _ENV.jetCache = setmetatable({}, {
-        __index = function(self, key)
-            return exports['jet-lib']:getCache(key)
-        end
-    })
-end
 
 local intervals = {}
 --- Dream of a world where this PR gets accepted.
@@ -284,4 +158,112 @@ function ClearInterval(id)
     end
 
     intervals[id] = -1
+end
+
+--[[
+    lua language server doesn't support generics when using @overload
+    see https://github.com/LuaLS/lua-language-server/issues/723
+    this function stub allows the following to work
+
+    local key = cache('key', function() return 'abc' end) -- fff: 'abc'
+    local game = cache.game -- game: string
+]]
+
+---@generic T
+---@param key string
+---@param func fun(...: any): T
+---@param timeout? number
+---@return T
+---Caches the result of a function, optionally clearing it after timeout ms.
+function cache(key, func, timeout) end
+
+local cacheEvents = {}
+
+local cache = setmetatable({ resource = resourceName }, {
+    __index = function(self, key)
+        cacheEvents[key] = {}
+
+        AddEventHandler(('jet-lib:cache:%s'):format(key), function(value)
+            local oldValue = self[key]
+            local events = cacheEvents[key]
+
+            for i = 1, #events do
+                Citizen.CreateThreadNow(function()
+                    events[i](value, oldValue)
+                end)
+            end
+
+            self[key] = value
+        end)
+
+        return rawset(self, key, export.cache(nil, key) or false)[key]
+    end,
+
+    __call = function(self, key, func, timeout)
+        local value = rawget(self, key)
+
+        if value == nil then
+            value = func()
+
+            rawset(self, key, value)
+
+            if timeout then SetTimeout(timeout, function() self[key] = nil end) end
+        end
+
+        return value
+    end,
+})
+
+function Jet.onCache(key, cb)
+    if not cacheEvents[key] then
+        getmetatable(cache).__index(cache, key)
+    end
+
+    table.insert(cacheEvents[key], cb)
+end
+
+_ENV.Jet = Jet
+_ENV.cache = cache
+_ENV.require = Jet.require
+
+if context == 'client' then
+    cache.playerId = PlayerId()
+    cache.serverId = GetPlayerServerId(cache.playerId)
+else
+    local poolNatives = {
+        CPed = GetAllPeds,
+        CObject = GetAllObjects,
+        CVehicle = GetAllVehicles,
+    }
+
+    ---@param poolName 'CPed' | 'CObject' | 'CVehicle'
+    ---@return number[]
+    ---Server-side parity for the `GetGamePool` client native.
+    function GetGamePool(poolName)
+        local fn = poolNatives[poolName]
+        return fn and fn() --[[@as number[] ]]
+    end
+
+    ---@return number[]
+    ---Server-side parity for the `GetPlayers` client native.
+    function GetActivePlayers()
+        local playerNum = GetNumPlayerIndices()
+        local players = table.create(playerNum, 0)
+
+        for i = 1, playerNum do
+            players[i] = tonumber(GetPlayerFromIndex(i - 1))
+        end
+
+        return players
+    end
+end
+
+for i = 1, GetNumResourceMetadata(cache.resource, 'jet-lib') do
+    local name = GetResourceMetadata(cache.resource, 'jet-lib', i - 1)
+
+    if not rawget(Jet, name) then
+        local module = loadModule(Jet, name)
+
+        if type(module) == 'function' then pcall(module) end
+    end
 end
