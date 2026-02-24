@@ -30,12 +30,12 @@ local mapMaxX = 4500
 local mapMaxY = 8000
 local xDelta = (mapMaxX - mapMinX) / 34
 local yDelta = (mapMaxY - mapMinY) / 50
-local Grid = {}
+local grid = {}
 local lastCell = {}
 local gridCache = {}
 local entrySet = {}
 
-Grid = {}
+local Module = {}
 
 ---@class GridEntry
 ---@field coords vector
@@ -48,7 +48,7 @@ Grid = {}
 ---@param length number
 ---@param width number
 ---@return number, number, number, number
-local function getGridDimensions(point, length, width)
+local function GetGridDimensions(point, length, width)
     local minX = (point.x - width - mapMinX) // xDelta
     local maxX = (point.x + width - mapMinX) // xDelta
     local minY = (point.y - length - mapMinY) // yDelta
@@ -59,7 +59,7 @@ end
 
 ---@param point vector
 ---@return number, number
-function Grid.getCellPosition(point)
+function Module.GetCellPosition(point)
     local x = (point.x - mapMinX) // xDelta
     local y = (point.y - mapMinY) // yDelta
 
@@ -68,13 +68,13 @@ end
 
 ---@param point vector
 ---@return GridEntry[]
-function Grid.getCell(point)
-    local x, y = Grid.getCellPosition(point)
+function Module.GetCell(point)
+    local x, y = Module.GetCellPosition(point)
 
     if lastCell.x ~= x or lastCell.y ~= y then
         lastCell.x = x
         lastCell.y = y
-        lastCell.cell = Grid[y] and Grid[y][x] or {}
+        lastCell.cell = grid[y] and grid[y][x] or {}
     end
 
     return lastCell.cell
@@ -83,8 +83,8 @@ end
 ---@param point vector
 ---@param filter? fun(entry: GridEntry): boolean
 ---@return Array<GridEntry>
-function Grid.getNearbyEntries(point, filter)
-    local minX, maxX, minY, maxY = getGridDimensions(point, xDelta, yDelta)
+function Module.GetNearbyEntries(point, filter)
+    local minX, maxX, minY, maxY = GetGridDimensions(point, xDelta, yDelta)
 
     if gridCache.filter == filter and
         gridCache.minX == minX and
@@ -94,13 +94,14 @@ function Grid.getNearbyEntries(point, filter)
         return gridCache.entries
     end
 
-    local entries = Jet.array:new()
+    local entries = lib.array:new()
     local n = 0
 
     table.wipe(entrySet)
 
     for y = minY, maxY do
-        local row = Grid[y]
+        local row = grid[y]
+
         for x = minX, maxX do
             local cell = row and row[x]
 
@@ -129,13 +130,13 @@ function Grid.getNearbyEntries(point, filter)
 end
 
 ---@param entry { coords: vector, length?: number, width?: number, radius?: number, [string]: any }
-function Grid.addEntry(entry)
+function Module.AddEntry(entry)
     entry.length = entry.length or entry.radius * 2
     entry.width = entry.width or entry.radius * 2
-    local minX, maxX, minY, maxY = getGridDimensions(entry.coords, entry.length, entry.width)
+    local minX, maxX, minY, maxY = GetGridDimensions(entry.coords, entry.length, entry.width)
 
     for y = minY, maxY do
-        local row = Grid[y] or {}
+        local row = grid[y] or {}
 
         for x = minX, maxX do
             local cell = row[x] or {}
@@ -144,18 +145,19 @@ function Grid.addEntry(entry)
             row[x] = cell
         end
 
-        Grid[y] = row
+        grid[y] = row
+
         table.wipe(gridCache)
     end
 end
 
 ---@param entry table A table that was added to the grid previously.
-function Grid.removeEntry(entry)
-    local minX, maxX, minY, maxY = getGridDimensions(entry.coords, entry.length, entry.width)
+function Module.RemoveEntry(entry)
+    local minX, maxX, minY, maxY = GetGridDimensions(entry.coords, entry.length, entry.width)
     local success = false
 
     for y = minY, maxY do
-        local row = Grid[y]
+        local row = grid[y]
 
         if not row then goto continue end
 
@@ -178,7 +180,7 @@ function Grid.removeEntry(entry)
         end
 
         if not next(row) then
-            Grid[y] = nil
+            grid[y] = nil
         end
 
         ::continue::
@@ -189,4 +191,4 @@ function Grid.removeEntry(entry)
     return success
 end
 
-return Grid
+return Module

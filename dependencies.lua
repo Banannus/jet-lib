@@ -30,9 +30,9 @@ local resources = {
     notify = {
         -- ['ox_lib'] = 'ox',
     },
-    radialmenu = {
-        ['qb-radialmenu'] = 'qb',
-        ['ox_lib'] = 'ox',
+    radial = {
+        -- ['qb-radialmenu'] = 'qb',
+        -- ['ox_lib'] = 'ox',
     }
 }
 
