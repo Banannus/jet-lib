@@ -48,7 +48,7 @@ Grid = {}
 ---@param length number
 ---@param width number
 ---@return number, number, number, number
-local function getGridDimensions(point, length, width)
+local function GetGridDimensions(point, length, width)
     local minX = (point.x - width - mapMinX) // xDelta
     local maxX = (point.x + width - mapMinX) // xDelta
     local minY = (point.y - length - mapMinY) // yDelta
@@ -59,7 +59,7 @@ end
 
 ---@param point vector
 ---@return number, number
-function Grid.getCellPosition(point)
+function Grid.GetCellPosition(point)
     local x = (point.x - mapMinX) // xDelta
     local y = (point.y - mapMinY) // yDelta
 
@@ -68,8 +68,8 @@ end
 
 ---@param point vector
 ---@return GridEntry[]
-function Grid.getCell(point)
-    local x, y = Grid.getCellPosition(point)
+function Grid.GetCell(point)
+    local x, y = Grid.GetCellPosition(point)
 
     if lastCell.x ~= x or lastCell.y ~= y then
         lastCell.x = x
@@ -83,8 +83,8 @@ end
 ---@param point vector
 ---@param filter? fun(entry: GridEntry): boolean
 ---@return Array<GridEntry>
-function Grid.getNearbyEntries(point, filter)
-    local minX, maxX, minY, maxY = getGridDimensions(point, xDelta, yDelta)
+function Grid.GetNearbyEntries(point, filter)
+    local minX, maxX, minY, maxY = GetGridDimensions(point, xDelta, yDelta)
 
     if gridCache.filter == filter and
         gridCache.minX == minX and
@@ -129,10 +129,10 @@ function Grid.getNearbyEntries(point, filter)
 end
 
 ---@param entry { coords: vector, length?: number, width?: number, radius?: number, [string]: any }
-function Grid.addEntry(entry)
+function Grid.AddEntry(entry)
     entry.length = entry.length or entry.radius * 2
     entry.width = entry.width or entry.radius * 2
-    local minX, maxX, minY, maxY = getGridDimensions(entry.coords, entry.length, entry.width)
+    local minX, maxX, minY, maxY = GetGridDimensions(entry.coords, entry.length, entry.width)
 
     for y = minY, maxY do
         local row = Grid[y] or {}
@@ -150,8 +150,8 @@ function Grid.addEntry(entry)
 end
 
 ---@param entry table A table that was added to the grid previously.
-function Grid.removeEntry(entry)
-    local minX, maxX, minY, maxY = getGridDimensions(entry.coords, entry.length, entry.width)
+function Grid.RemoveEntry(entry)
+    local minX, maxX, minY, maxY = GetGridDimensions(entry.coords, entry.length, entry.width)
     local success = false
 
     for y = minY, maxY do

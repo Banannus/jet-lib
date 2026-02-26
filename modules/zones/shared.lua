@@ -116,7 +116,7 @@ local tick
 local function removeZone(zone)
     Zones[zone.id] = nil
 
-    Jet.grid.removeEntry(zone)
+    Jet.Grid.RemoveEntry(zone)
 
     if Jet.context == 'server' then return end
 
@@ -131,8 +131,8 @@ CreateThread(function()
 
     while true do
         local coords = GetEntityCoords(cache.ped)
-        local zones = Jet.grid.getNearbyEntries(coords, function(entry) return entry.remove == removeZone end) --[[@as Array<CZone>]]
-        local cellX, cellY = Jet.grid.getCellPosition(coords)
+        local zones = Jet.Grid.GetNearbyEntries(coords, function(entry) return entry.remove == removeZone end) --[[@as Array<CZone>]]
+        local cellX, cellY = Jet.Grid.GetCellPosition(coords)
         cache.coords = coords
 
         if cellX ~= cache.lastCellX or cellY ~= cache.lastCellY then
@@ -350,7 +350,7 @@ local function setZone(data)
     end
 
     Zones[data.id] = data
-    Jet.grid.addEntry(data)
+    Jet.Grid.AddEntry(data)
 
     return data
 end
