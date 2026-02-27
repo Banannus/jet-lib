@@ -34,6 +34,9 @@ local resources = {
         ['qb-radialmenu'] = 'qb',
         ['ox_lib'] = 'ox',
     },
+    target = {
+        ['ox_target'] = 'ox'
+    }
 }
 
 local function InitiateDependencies()
