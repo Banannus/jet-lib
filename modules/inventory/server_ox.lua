@@ -20,4 +20,4 @@ function Inventory.GetInventory(source)
     return Object:GetInventory(source)
 end
 
-return Inventory
+return Inventory 

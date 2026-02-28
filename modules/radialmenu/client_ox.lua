@@ -1,4 +1,4 @@
-local Object, RadialMenu = Dep.radialmenu.object, {}
+local Object, RadialMenu = Jet.dep.radialmenu.object, {}
 
 function RadialMenu.AddItem(data)
     return Object:addRadialItem(data)

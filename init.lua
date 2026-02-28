@@ -39,7 +39,7 @@ local function loadModule(self, module)
     local chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, context))
     local shared = LoadResourceFile(jetlib, ('%s/shared.lua'):format(dir))
 
-    local dep = Jet.deb[module]
+    local dep = Jet.dep[module]
 
     if dep then
         chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, ('%s_%s'):format(context, dep.value))) or chunk
@@ -98,10 +98,33 @@ local function call(self, index, ...)
     return module
 end
 
+local rawDep = export.getdep()
+local dep = setmetatable({}, {
+    __index = function(self, key)
+        local info = rawDep[key]
+        if not info or not info.resource then
+            local empty = {}
+            rawset(self, key, empty)
+            return empty
+        end
+
+        local entry
+        if key == 'framework' then
+            local getter = info.resource == 'es_extended' and 'getSharedObject' or 'GetCoreObject'
+            entry = { value = info.value, object = exports[info.resource][getter]() }
+        else
+            entry = { value = info.value, object = exports[info.resource] }
+        end
+
+        rawset(self, key, entry)
+        return entry
+    end
+})
+
 local Jet = setmetatable({
     name = 'jet-lib',
     context = context,
-    dep = export.getdep(),
+    dep = dep,
 }, {
     __index = call,
     __call = call,

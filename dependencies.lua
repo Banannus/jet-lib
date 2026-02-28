@@ -54,7 +54,7 @@ local function InitiateDependencies()
                     object = exports[resName]
                 end
 
-                Dep[key] = { value = resValue, object = object }
+                Dep[key] = { value = resValue, object = object, resource = resName }
                 break
             end
         end
