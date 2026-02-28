@@ -47,6 +47,6 @@ cache = { resource = Jet.name }
 
 function Jet.initialized() return true end
 
-function Jet.getdep()return Dep end
+function Jet.getdep() return Dep end
 
 require = Jet.Require
