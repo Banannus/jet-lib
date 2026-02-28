@@ -1,4 +1,4 @@
-local Object, Inventory = Dep.inventory.object, {}
+local Object, Inventory = Jet.dep.inventory.object, {}
 
 function Inventory.OpenInventory(invType, data)
     return Object:openInventory(invType, data)

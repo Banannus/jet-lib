@@ -1,4 +1,4 @@
-local Object, Inventory = Dep.inventory.object, {}
+local Object, Inventory = Jet.dep.inventory.object, {}
 
 function Inventory.AddItem(source, item, count, metadata, slot)
     return Object:AddItem(source, item, count, slot, metadata)

@@ -1,4 +1,4 @@
-local Framework, ESX = {}, Dep.framework.object
+local Framework, ESX = {}, Jet.dep.framework.object
 
 local function ConvertMoneyType(moneyType)
     if moneyType == 'cash' then return 'money' end

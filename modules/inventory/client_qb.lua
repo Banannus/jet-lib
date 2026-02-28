@@ -1,4 +1,4 @@
-local Object, Inventory = Dep.inventory.object, {}
+local Object, Inventory = Jet.dep.inventory.object, {}
 
 -- TODO
 

@@ -1,4 +1,4 @@
-local Object, Target = Dep.target.object, {}
+local Object, Target = Jet.dep.target.object, {}
 
 function Target.AddGlobalVehicle(Options)
     return Object:addGlobalVehicle(Options)

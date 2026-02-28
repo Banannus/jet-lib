@@ -1,4 +1,4 @@
-local Framework, QBCore = {}, Dep.framework.object
+local Framework, QBCore = {}, Jet.dep.framework.object
 
 local function ConvertMoneyType(moneyType)
     if moneyType == 'money' then return 'cash' end

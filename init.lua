@@ -39,7 +39,7 @@ local function loadModule(self, module)
     local chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, context))
     local shared = LoadResourceFile(jetlib, ('%s/shared.lua'):format(dir))
 
-    local dep = export.getdep(module)
+    local dep = Jet.deb[module]
 
     if dep then
         chunk = LoadResourceFile(jetlib, ('%s/%s.lua'):format(dir, ('%s_%s'):format(context, dep.value))) or chunk
@@ -101,6 +101,7 @@ end
 local Jet = setmetatable({
     name = 'jet-lib',
     context = context,
+    dep = export.getdep(),
 }, {
     __index = call,
     __call = call,
