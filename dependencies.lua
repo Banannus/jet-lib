@@ -36,6 +36,10 @@ local resources = {
     },
     target = {
         ['ox_target'] = 'ox'
+    },
+    teams = {
+        ['bach_squad'] = 'bach',
+        -- ['st_teams'] = 'st',
     }
 }
 
