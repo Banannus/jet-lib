@@ -57,3 +57,13 @@ CreateThread(function()
         LastJobs[src] = nil
     end)
 end)
+
+local function RunActionForJob(job, action)
+    if not JobCache[job] then return end
+    for i = 1, #JobCache[job] do
+        action(JobCache[job][i])
+    end
+end
+
+_ENV.Jet = _ENV.Jet or {}
+_ENV.Jet.RunActionForJob = RunActionForJob

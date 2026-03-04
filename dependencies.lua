@@ -61,4 +61,4 @@ local function InitiateDependencies()
     end
 end
 
-CreateThread(InitiateDependencies)
+InitiateDependencies()

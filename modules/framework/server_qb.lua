@@ -28,6 +28,22 @@ function Framework.GetPlayerData(source)
     }
 end
 
+function Framework.HasJob(source, jobName, grade)
+    local Player = QBCore.Functions.GetPlayer(source)
+    if not Player then return false end
+
+    if grade then
+        return Player.PlayerData.job.name == jobName and Player.PlayerData.job.grade.level >= grade
+    else
+        return Player.PlayerData.job.name == jobName
+    end
+end
+
+function Framework.GetIdentifier(source)
+    local Player = QBCore.Functions.GetPlayer(source)
+    return Player and Player.PlayerData.citizenid or nil
+end
+
 function Framework.AddMoney(source, moneyType, amount)
     moneyType = ConvertMoneyType(moneyType)
     local Player = QBCore.Functions.GetPlayer(source)

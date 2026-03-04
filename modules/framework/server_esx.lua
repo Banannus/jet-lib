@@ -28,6 +28,22 @@ function Framework.GetPlayerData(source)
     }
 end
 
+function Framework.HasJob(source, jobName, grade)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return false end
+
+    if grade then
+        return xPlayer.job.name == jobName and xPlayer.job.grade >= grade
+    else
+        return xPlayer.job.name == jobName
+    end
+end
+
+function Framework.GetIdentifier(source)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    return xPlayer and xPlayer.identifier or nil
+end
+
 function Framework.AddMoney(source, moneyType, amount)
     moneyType = ConvertMoneyType(moneyType)
     local xPlayer = ESX.GetPlayerFromId(source)
