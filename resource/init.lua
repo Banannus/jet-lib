@@ -5,6 +5,7 @@ function noop() end
 Jet = setmetatable({
     name = 'jet-lib',
     context = IsDuplicityVersion() and 'server' or 'client',
+    dep = Dep
 }, {
     __newindex = function(self, key, fn)
         key = string.lower(key)
