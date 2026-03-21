@@ -20,6 +20,15 @@ CreateThread(function()
     for i = 1, #data do
         metadata[data[i].identifier] = json.decode(data[i].metadata)
     end
+
+    local Players = GetPlayers()
+    for i = 1, #Players do
+        local source = tonumber(Players[i])
+        local playerData = Jet.Framework.GetPlayerData(source)
+        if playerData then
+            identifiers[source] = playerData.identifier
+        end
+    end
 end)
 
 ---@param source number
@@ -51,14 +60,16 @@ end
 ---@param source number
 ---@param key string
 ---@param default any
+---@return any
 function Jet.GetMetaData(source, key, default)
     local identifier = identifiers[source]
-    if not identifier then return end
+    if not identifier then return default end
 
-    return metadata[identifier] and metadata[identifier][key] == nil and default or metadata[identifier][key]
+    if not metadata[identifier] or metadata[identifier][key] == nil then return default end
+    return metadata[identifier][key]
 end
 
-AddEventHandler('jet:server:playerLoaded', function(source, playerData) identifiers[source] = playerData.identifiers end)
+AddEventHandler('jet:server:playerLoaded', function(source, playerData) identifiers[source] = playerData.identifier end)
 
 AddEventHandler('playerDropped', function(reason)
     local source = source
